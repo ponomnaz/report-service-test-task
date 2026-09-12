@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ReportService.Api.Domain;
+using ReportService.Api.Infrastructure.Persistence.Seed;
 
 namespace ReportService.Api.Infrastructure.Persistence.Configurations;
 
@@ -15,5 +16,7 @@ internal sealed class SignInEventConfiguration : IEntityTypeConfiguration<SignIn
         builder.Property(signIn => signIn.OccurredAt);
 
         builder.HasIndex(signIn => new { signIn.UserId, signIn.OccurredAt });
+
+        builder.HasData(DemoSignInEvents.All);
     }
 }
