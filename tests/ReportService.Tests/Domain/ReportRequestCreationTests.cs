@@ -29,6 +29,17 @@ public sealed class ReportRequestCreationTests
     }
 
     [Fact]
+    public void CreatedAtIsNormalizedToUtc()
+    {
+        var createdAtInMoscowTime = _createdAt.ToOffset(TimeSpan.FromHours(3));
+
+        var request = ReportRequest.Create(_userId, _period, createdAtInMoscowTime);
+
+        Assert.Equal(TimeSpan.Zero, request.CreatedAt.Offset);
+        Assert.Equal(createdAtInMoscowTime, request.CreatedAt);
+    }
+
+    [Fact]
     public void EachNewRequestGetsItsOwnId()
     {
         var first = ReportRequest.Create(_userId, _period, _createdAt);

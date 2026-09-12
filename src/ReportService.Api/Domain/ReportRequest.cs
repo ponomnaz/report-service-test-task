@@ -4,6 +4,11 @@ public sealed class ReportRequest
 {
     private const int CompletePercent = 100;
 
+    private ReportRequest()
+    {
+        Period = null!;
+    }
+
     private ReportRequest(Guid id, Guid userId, DateRange period, DateTimeOffset createdAt)
     {
         Id = id;
@@ -34,7 +39,9 @@ public sealed class ReportRequest
             throw new ArgumentException("User id must not be empty.", nameof(userId));
         }
 
-        return new ReportRequest(Guid.CreateVersion7(createdAt), userId, period, createdAt);
+        var createdAtUtc = createdAt.ToUniversalTime();
+
+        return new ReportRequest(Guid.CreateVersion7(createdAtUtc), userId, period, createdAtUtc);
     }
 
     public int CalculateProgressPercent(DateTimeOffset now, TimeSpan processingDuration)
