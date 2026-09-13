@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using ReportService.Api.Application;
 using ReportService.Api.Infrastructure.Persistence;
 
@@ -16,6 +17,14 @@ public sealed class ServiceRegistrationTests
         using var scope = provider.CreateScope();
 
         Assert.NotNull(scope.ServiceProvider.GetRequiredService(serviceType));
+    }
+
+    [Fact]
+    public void ProcessingWorkerIsRegisteredAsHostedService()
+    {
+        using var provider = BuildServiceProvider();
+
+        Assert.Contains(provider.GetServices<IHostedService>(), service => service is ReportRequestProcessingWorker);
     }
 
     [Fact]
@@ -36,6 +45,7 @@ public sealed class ServiceRegistrationTests
             .Build();
 
         return new ServiceCollection()
+            .AddLogging()
             .AddApplication(configuration)
             .AddPersistence(configuration)
             .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });

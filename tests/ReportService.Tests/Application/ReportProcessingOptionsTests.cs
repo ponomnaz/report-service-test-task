@@ -10,6 +10,9 @@ public sealed class ReportProcessingOptionsTests
     private static readonly string _processingDurationKey =
         $"{ReportProcessingOptions.SectionName}:{nameof(ReportProcessingOptions.ProcessingDurationMs)}";
 
+    private static readonly string _pollingIntervalKey =
+        $"{ReportProcessingOptions.SectionName}:{nameof(ReportProcessingOptions.PollingIntervalMs)}";
+
     [Fact]
     public void ApiAppSettingsFileSetsProcessingDurationToSixtySeconds()
     {
@@ -24,9 +27,7 @@ public sealed class ReportProcessingOptionsTests
     [Fact]
     public void ProcessingDurationDefaultsToSixtySecondsWhenNotConfigured()
     {
-        var emptyConfiguration = new ConfigurationBuilder().Build();
-
-        var options = ResolveOptions(emptyConfiguration);
+        var options = ResolveOptions(new ConfigurationBuilder().Build());
 
         Assert.Equal(TimeSpan.FromSeconds(60), options.ProcessingDuration);
     }
@@ -34,7 +35,7 @@ public sealed class ReportProcessingOptionsTests
     [Fact]
     public void ConfiguredProcessingDurationOverridesDefault()
     {
-        var options = ResolveOptions(CreateConfiguration(processingDurationMs: "1500"));
+        var options = ResolveOptions(CreateConfiguration(_processingDurationKey, "1500"));
 
         Assert.Equal(1500, options.ProcessingDurationMs);
         Assert.Equal(TimeSpan.FromMilliseconds(1500), options.ProcessingDuration);
@@ -46,23 +47,50 @@ public sealed class ReportProcessingOptionsTests
     public void NonPositiveProcessingDurationIsRejected(string processingDurationMs)
     {
         var exception = Assert.Throws<OptionsValidationException>(
-            () => ResolveOptions(CreateConfiguration(processingDurationMs)));
+            () => ResolveOptions(CreateConfiguration(_processingDurationKey, processingDurationMs)));
 
         Assert.Contains(nameof(ReportProcessingOptions.ProcessingDurationMs), exception.Message);
     }
 
     [Fact]
+    public void PollingIntervalDefaultsToOneSecondWhenNotConfigured()
+    {
+        var options = ResolveOptions(new ConfigurationBuilder().Build());
+
+        Assert.Equal(TimeSpan.FromSeconds(1), options.PollingInterval);
+    }
+
+    [Fact]
+    public void ConfiguredPollingIntervalOverridesDefault()
+    {
+        var options = ResolveOptions(CreateConfiguration(_pollingIntervalKey, "250"));
+
+        Assert.Equal(TimeSpan.FromMilliseconds(250), options.PollingInterval);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-1")]
+    public void NonPositivePollingIntervalIsRejected(string pollingIntervalMs)
+    {
+        var exception = Assert.Throws<OptionsValidationException>(
+            () => ResolveOptions(CreateConfiguration(_pollingIntervalKey, pollingIntervalMs)));
+
+        Assert.Contains(nameof(ReportProcessingOptions.PollingIntervalMs), exception.Message);
+    }
+
+    [Fact]
     public void InvalidProcessingDurationFailsStartupValidation()
     {
-        using var provider = BuildServiceProvider(CreateConfiguration(processingDurationMs: "0"));
+        using var provider = BuildServiceProvider(CreateConfiguration(_processingDurationKey, "0"));
         var startupValidator = provider.GetRequiredService<IStartupValidator>();
 
         Assert.Throws<OptionsValidationException>(startupValidator.Validate);
     }
 
-    private static IConfiguration CreateConfiguration(string processingDurationMs) =>
+    private static IConfiguration CreateConfiguration(string key, string value) =>
         new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { [_processingDurationKey] = processingDurationMs })
+            .AddInMemoryCollection(new Dictionary<string, string?> { [key] = value })
             .Build();
 
     private static ReportProcessingOptions ResolveOptions(IConfiguration configuration)

@@ -12,6 +12,7 @@ public static class ApplicationServiceCollectionExtensions
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<ReportRequestService>();
         services.AddScoped<ReportRequestCompletionService>();
+        services.AddHostedService<ReportRequestProcessingWorker>();
 
         return services;
     }
