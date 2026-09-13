@@ -5,12 +5,12 @@ using ReportService.Api.Infrastructure.Persistence;
 
 namespace ReportService.Api.Application;
 
-public sealed class ReportRequestCompletionService(
-    ReportDbContext dbContext,
-    TimeProvider timeProvider,
-    IOptions<ReportProcessingOptions> options)
+public sealed class ReportRequestCompletionService(ReportDbContext dbContext, IOptions<ReportProcessingOptions> options)
 {
-    public async Task<ReportRequest?> CompleteIfReadyAsync(Guid requestId, CancellationToken cancellationToken)
+    public async Task<ReportRequest?> CompleteIfReadyAsync(
+        Guid requestId,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
     {
         var request = await dbContext.ReportRequests
             .SingleOrDefaultAsync(storedRequest => storedRequest.Id == requestId, cancellationToken);
@@ -20,7 +20,6 @@ public sealed class ReportRequestCompletionService(
             return null;
         }
 
-        var now = timeProvider.GetUtcNow();
         var processingDuration = options.Value.ProcessingDuration;
 
         if (!request.IsReadyToComplete(now, processingDuration))
