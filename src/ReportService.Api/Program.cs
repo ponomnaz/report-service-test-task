@@ -1,10 +1,12 @@
 using Microsoft.Extensions.Options;
 using ReportService.Api.Application;
+using ReportService.Api.Contracts;
 using ReportService.Api.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(json => json.JsonSerializerOptions.ConfigureForApi());
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
 
