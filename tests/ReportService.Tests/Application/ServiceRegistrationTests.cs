@@ -7,23 +7,37 @@ namespace ReportService.Tests.Application;
 
 public sealed class ServiceRegistrationTests
 {
+    [Theory]
+    [InlineData(typeof(ReportRequestService))]
+    [InlineData(typeof(ReportRequestCompletionService))]
+    public void ApplicationServiceResolvesFromRealRegistrations(Type serviceType)
+    {
+        using var provider = BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService(serviceType));
+    }
+
     [Fact]
-    public void ReportRequestServiceResolvesFromApplicationAndPersistenceRegistrations()
+    public void SystemClockIsRegistered()
+    {
+        using var provider = BuildServiceProvider();
+
+        Assert.Same(TimeProvider.System, provider.GetRequiredService<TimeProvider>());
+    }
+
+    private static ServiceProvider BuildServiceProvider()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:ReportDb"] = "Host=localhost;Database=report_service",
+                ["ConnectionStrings:ReportDb"] = "Host=127.0.0.1;Database=report_service",
             })
             .Build();
 
-        using var provider = new ServiceCollection()
+        return new ServiceCollection()
             .AddApplication(configuration)
             .AddPersistence(configuration)
             .BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });
-        using var scope = provider.CreateScope();
-
-        Assert.NotNull(scope.ServiceProvider.GetRequiredService<ReportRequestService>());
-        Assert.Same(TimeProvider.System, provider.GetRequiredService<TimeProvider>());
     }
 }

@@ -32,4 +32,30 @@ public sealed class DateRangeTests
 
         Assert.Equal(first, second);
     }
+
+    [Fact]
+    public void RangeStartsAtUtcMidnightOfFirstDay()
+    {
+        var february = new DateRange(new DateOnly(2026, 2, 1), new DateOnly(2026, 2, 28));
+
+        Assert.Equal(new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero), february.StartUtc);
+    }
+
+    [Fact]
+    public void RangeEndsAtUtcMidnightAfterLastDay()
+    {
+        var february = new DateRange(new DateOnly(2026, 2, 1), new DateOnly(2026, 2, 28));
+
+        Assert.Equal(new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero), february.EndUtcExclusive);
+    }
+
+    [Fact]
+    public void SingleDayRangeSpansExactlyOneDay()
+    {
+        var day = new DateOnly(2026, 3, 1);
+
+        var range = new DateRange(day, day);
+
+        Assert.Equal(TimeSpan.FromDays(1), range.EndUtcExclusive - range.StartUtc);
+    }
 }

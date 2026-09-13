@@ -16,4 +16,8 @@ public sealed record DateRange
     public DateOnly From { get; }
 
     public DateOnly To { get; }
+
+    public DateTimeOffset StartUtc => new(From, TimeOnly.MinValue, TimeSpan.Zero);
+
+    public DateTimeOffset EndUtcExclusive => new(To.AddDays(1), TimeOnly.MinValue, TimeSpan.Zero);
 }

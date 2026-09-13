@@ -48,6 +48,11 @@ public sealed class ReportRequest
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(processingDuration, TimeSpan.Zero);
 
+        if (Status == ReportRequestStatus.Completed)
+        {
+            return CompletePercent;
+        }
+
         var elapsed = now - CreatedAt;
 
         if (elapsed <= TimeSpan.Zero)
@@ -62,5 +67,28 @@ public sealed class ReportRequest
 
         // Integer ticks instead of double division: 17.4 s of 60 s must floor to 29, not 28.
         return (int)(elapsed.Ticks * CompletePercent / processingDuration.Ticks);
+    }
+
+    public bool IsReadyToComplete(DateTimeOffset now, TimeSpan processingDuration) =>
+        Status == ReportRequestStatus.Pending && CalculateProgressPercent(now, processingDuration) == CompletePercent;
+
+    public void Complete(int countSignIn, DateTimeOffset now, TimeSpan processingDuration)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(countSignIn);
+
+        if (Status == ReportRequestStatus.Completed)
+        {
+            return;
+        }
+
+        if (!IsReadyToComplete(now, processingDuration))
+        {
+            throw new InvalidOperationException(
+                $"Report request {Id} cannot be completed before its processing duration of {processingDuration} elapses.");
+        }
+
+        Status = ReportRequestStatus.Completed;
+        CountSignIn = countSignIn;
+        CompletedAt = now.ToUniversalTime();
     }
 }
