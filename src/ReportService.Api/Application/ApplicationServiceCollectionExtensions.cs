@@ -9,6 +9,9 @@ public static class ApplicationServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddSingleton(TimeProvider.System);
+        services.AddScoped<ReportRequestService>();
+
         return services;
     }
 }
