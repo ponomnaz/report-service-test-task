@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using ReportService.Api.Application;
 using ReportService.Api.Contracts;
@@ -13,6 +14,7 @@ public sealed class ReportController(ReportRequestService reportRequestService) 
 
     [HttpPost("user_statistics")]
     [ProducesResponseType<CreateUserStatisticsResponse>(StatusCodes.Status202Accepted)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateUserStatisticsAsync(
         CreateUserStatisticsRequest request,
         CancellationToken cancellationToken)
@@ -25,10 +27,13 @@ public sealed class ReportController(ReportRequestService reportRequestService) 
 
     [HttpGet("info", Name = GetInfoRouteName)]
     [ProducesResponseType<ReportInfoResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetInfoAsync([FromQuery] Guid query, CancellationToken cancellationToken)
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetInfoAsync(
+        [FromQuery, Required] Guid? query,
+        CancellationToken cancellationToken)
     {
-        var info = await reportRequestService.GetInfoAsync(query, cancellationToken);
+        var info = await reportRequestService.GetInfoAsync(query!.Value, cancellationToken);
 
         return info is null ? NotFound() : Ok(ReportInfoResponse.From(info));
     }

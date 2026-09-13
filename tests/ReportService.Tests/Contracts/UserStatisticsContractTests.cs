@@ -22,6 +22,26 @@ public sealed class UserStatisticsContractTests
         Assert.Equal(expected, request);
     }
 
+    [Theory]
+    [InlineData("""{"date_from":"2026-01-01","date_to":"2026-01-31"}""")]
+    [InlineData("""{"user_id":"b28d0ced-8af5-4c94-8650-c7946241fd1a","date_to":"2026-01-31"}""")]
+    [InlineData("""{"user_id":"b28d0ced-8af5-4c94-8650-c7946241fd1a","date_from":"2026-01-01"}""")]
+    public void CreateRequestWithMissingFieldIsRejected(string json)
+    {
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<CreateUserStatisticsRequest>(json, _apiJsonOptions));
+    }
+
+    [Fact]
+    public void CreateRequestAcceptsIsoDateTimesForDates()
+    {
+        const string Json = """{"user_id":"b28d0ced-8af5-4c94-8650-c7946241fd1a","date_from":"2026-01-01T00:00:00Z","date_to":"2026-01-31T23:59:59+03:00"}""";
+
+        var request = JsonSerializer.Deserialize<CreateUserStatisticsRequest>(Json, _apiJsonOptions);
+
+        Assert.Equal(new DateOnly(2026, 1, 1), request!.DateFrom);
+        Assert.Equal(new DateOnly(2026, 1, 31), request.DateTo);
+    }
+
     [Fact]
     public void CreateResponseIsWrittenAsQuery()
     {
