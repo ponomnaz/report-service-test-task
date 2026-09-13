@@ -1,0 +1,14 @@
+namespace ReportService.Api.Application;
+
+public static class ApplicationServiceCollectionExtensions
+{
+    public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<ReportProcessingOptions>()
+            .Bind(configuration.GetSection(ReportProcessingOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        return services;
+    }
+}
