@@ -1,0 +1,100 @@
+@baseUrl = http://localhost:5007
+@taskExampleUserId = b28d0ced-8af5-4c94-8650-c7946241fd1a
+
+### Create a request for the task example user, January 2026
+# @name createUserStatistics
+POST {{baseUrl}}/report/user_statistics
+Content-Type: application/json
+
+{
+  "user_id": "{{taskExampleUserId}}",
+  "date_from": "2026-01-01",
+  "date_to": "2026-01-31"
+}
+
+### Get request info from the Location of the previous response
+GET {{createUserStatistics.response.headers.Location}}
+
+### Other demo user, first quarter of 2026
+POST {{baseUrl}}/report/user_statistics
+Content-Type: application/json
+
+{
+  "user_id": "4c1f9e2a-7b3d-4f8e-a6c5-2d9b0e1f3a7c",
+  "date_from": "2026-01-01",
+  "date_to": "2026-03-31"
+}
+
+### Boundary demo user, February 2026
+POST {{baseUrl}}/report/user_statistics
+Content-Type: application/json
+
+{
+  "user_id": "8e2d4b6a-1c3f-4a5e-9b7d-0f2a4c6e8b1d",
+  "date_from": "2026-02-01",
+  "date_to": "2026-02-28"
+}
+
+### Dates as ISO 8601 date-time
+POST {{baseUrl}}/report/user_statistics
+Content-Type: application/json
+
+{
+  "user_id": "{{taskExampleUserId}}",
+  "date_from": "2026-01-01T00:00:00Z",
+  "date_to": "2026-01-31T23:59:59+03:00"
+}
+
+### Error: user_id is missing
+POST {{baseUrl}}/report/user_statistics
+Content-Type: application/json
+
+{
+  "date_from": "2026-01-01",
+  "date_to": "2026-01-31"
+}
+
+### Error: user_id is empty
+POST {{baseUrl}}/report/user_statistics
+Content-Type: application/json
+
+{
+  "user_id": "00000000-0000-0000-0000-000000000000",
+  "date_from": "2026-01-01",
+  "date_to": "2026-01-31"
+}
+
+### Error: date_from is later than date_to
+POST {{baseUrl}}/report/user_statistics
+Content-Type: application/json
+
+{
+  "user_id": "{{taskExampleUserId}}",
+  "date_from": "2026-02-01",
+  "date_to": "2026-01-31"
+}
+
+### Error: unsupported date format
+POST {{baseUrl}}/report/user_statistics
+Content-Type: application/json
+
+{
+  "user_id": "{{taskExampleUserId}}",
+  "date_from": "01.01.2026",
+  "date_to": "2026-01-31"
+}
+
+### Error: query is missing
+GET {{baseUrl}}/report/info
+
+### Error: query is not a guid
+GET {{baseUrl}}/report/info?query=not-a-guid
+
+### Error: request not found
+GET {{baseUrl}}/report/info?query=00000000-0000-0000-0000-000000000001
+
+### Health
+GET {{baseUrl}}/health
+
+### OpenAPI document
+GET {{baseUrl}}/openapi/v1.json

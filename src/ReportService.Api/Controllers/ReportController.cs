@@ -13,7 +13,7 @@ public sealed class ReportController(ReportRequestService reportRequestService) 
     private const string GetInfoRouteName = "GetReportInfo";
 
     [HttpPost("user_statistics")]
-    [ProducesResponseType<CreateUserStatisticsResponse>(StatusCodes.Status202Accepted)]
+    [ProducesResponseType<Guid>(StatusCodes.Status202Accepted)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateUserStatisticsAsync(
         CreateUserStatisticsRequest request,
@@ -22,7 +22,7 @@ public sealed class ReportController(ReportRequestService reportRequestService) 
         var period = new DateRange(request.DateFrom, request.DateTo);
         var requestId = await reportRequestService.CreateAsync(request.UserId, period, cancellationToken);
 
-        return AcceptedAtRoute(GetInfoRouteName, new { query = requestId }, new CreateUserStatisticsResponse(requestId));
+        return AcceptedAtRoute(GetInfoRouteName, new { query = requestId }, requestId);
     }
 
     [HttpGet("info", Name = GetInfoRouteName)]

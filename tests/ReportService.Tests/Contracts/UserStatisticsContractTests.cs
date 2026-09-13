@@ -43,12 +43,12 @@ public sealed class UserStatisticsContractTests
     }
 
     [Fact]
-    public void CreateResponseIsWrittenAsQuery()
+    public void CreatedRequestIdIsWrittenAsBareJsonString()
     {
-        var response = new CreateUserStatisticsResponse(Guid.Parse("1a98b57d-e090-4d18-8654-678e463b73e8"));
+        var requestId = Guid.Parse("1a98b57d-e090-4d18-8654-678e463b73e8");
 
-        var json = JsonSerializer.Serialize(response, _apiJsonOptions);
+        var json = JsonSerializer.Serialize(requestId, _apiJsonOptions);
 
-        Assert.Equal("""{"query":"1a98b57d-e090-4d18-8654-678e463b73e8"}""", json);
+        Assert.Equal("\"1a98b57d-e090-4d18-8654-678e463b73e8\"", json);
     }
 }
